@@ -1,3 +1,11 @@
+# 🔁 Atualizações
+
+### 🚀 Novidades da Versão 2.0.0
+
+* **🔍 Painel Central de Busca:** Caixas dedicadas para busca individual por Cliente e Endereço.
+* **💡 Grifado Visual:** Termos pesquisados são destacados em amarelo na prévia da mensagem.
+* **✉️ Mensagens Individuais:** Navegação rápida (Anterior/Próximo) entre as ordens dos fiscais.
+* **🧹 Formatação Limpa:** Remoção do campo de leitura atual e correção de números de ordens/UCs.
 # 📋 Gerador de Mensagens de Fiscalização
 
 Aplicativo desktop em Python/Tkinter para leitura de planilhas de ordens de serviço (`GERAL`) e geração de mensagens formatadas por fiscal para envio operacional via WhatsApp.
