@@ -22,10 +22,10 @@ Não é necessário ter o Python instalado para usar o programa:
 ### Instalação
 ```bash
 # Clocar o repositório
-git clone [https://github.com/Paulo-cesar-Matos/gerador_fiscal.git](https://github.com/Paulo-cesar-Matos/gerador_fiscal.git)
+git clone https://github.com/Paulo-cesar-Matos/gerador_fiscal.git
 
 # Entrar na pasta do projeto
-cd gerador_fiscal
+cd C:\Users\[seuUsuario]\Documents\GitHub
 
 # Instalar dependências
 pip install -r requirements.txt
