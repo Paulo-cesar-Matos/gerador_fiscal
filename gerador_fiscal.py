@@ -4,13 +4,13 @@ import re
 import unicodedata
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Tuple
-import numpy as np # type: ignore
-import pandas as pd # pyright: ignore[reportMissingModuleSource]
+import numpy as np  # type: ignore
+import pandas as pd  # pyright: ignore[reportMissingModuleSource]
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 try:
-    import pyperclip # pyright: ignore[reportMissingModuleSource]
+    import pyperclip  # pyright: ignore[reportMissingModuleSource]
 except ImportError:
     pyperclip = None
 
@@ -73,7 +73,9 @@ def format_date_str(val: Any) -> str:
         f = float(s)
         if 30000 < f < 60000:
             dt = pd.to_datetime(f, unit="D", origin="1899-12-30")
-            if isinstance(dt, (datetime, pd.Timestamp)): # pyright: ignore[reportUnnecessaryIsInstance]
+            if isinstance(
+                dt, (datetime, pd.Timestamp)
+            ):  # pyright: ignore[reportUnnecessaryIsInstance]
                 return dt.strftime("%d/%m/%Y")
     except (ValueError, TypeError):
         pass
@@ -397,7 +399,7 @@ class AppFiscal:
         self.ent_busca_endereco.pack(fill="x", pady=(0, 12))
         self.ent_busca_endereco.bind("<KeyRelease>", self.aplicar_filtros)
 
-        # Busca de Endereço):
+        # Filtro de Medidor
         tk.Label(
             middle_panel,
             text="⚡ Buscar Medidor:",
@@ -456,7 +458,12 @@ class AppFiscal:
         self.txt_preview.pack(side="left", fill="both", expand=True)
 
         # Estilo de realce/grifado
-        self.txt_preview.tag_config("highlight", background="#fef08a", foreground="#000000", font=("Consolas", 9, "bold"))
+        self.txt_preview.tag_config(
+            "highlight",
+            background="#fef08a",
+            foreground="#000000",
+            font=("Consolas", 9, "bold"),
+        )
 
         # Barra de Navegação (Anterior / Próximo)
         nav_frame = tk.Frame(right_panel, bg=self.bg_color)
@@ -697,20 +704,57 @@ class AppFiscal:
 
             df_temp: pd.DataFrame = pd.read_excel(caminho_arquivo, sheet_name=aba)
 
-            norm_map = {
-                normalize_header_text(col): col for col in df_temp.columns
-            }
+            norm_map = {normalize_header_text(col): col for col in df_temp.columns}
 
             mapeamento_colunas = {
-                "FISCAL": ["FISCAL", "NOME FISCAL", "RESPONSAVEL", "FISCAL RESPONSAVEL"],
-                "Nº ORDEM": ["N ORDEM", "NO ORDEM", "ORDEM", "NC", "NUMERO DA ORDEM", "NUMERO ORDEM", "OS"],
-                "Nº CLIENTE": ["N CLIENTE", "NO CLIENTE", "NUMERO DO CLIENTE", "CLIENTE", "UC", "CONTA CONTRATO"],
-                "NOME DO CLIENTE": ["NOME DO CLIENTE", "NOME CLIENTE", "CLIENTE NOME", "NOME", "RAZAO SOCIAL"],
+                "FISCAL": [
+                    "FISCAL",
+                    "NOME FISCAL",
+                    "RESPONSAVEL",
+                    "FISCAL RESPONSAVEL",
+                ],
+                "Nº ORDEM": [
+                    "N ORDEM",
+                    "NO ORDEM",
+                    "ORDEM",
+                    "NC",
+                    "NUMERO DA ORDEM",
+                    "NUMERO ORDEM",
+                    "OS",
+                ],
+                "Nº CLIENTE": [
+                    "N CLIENTE",
+                    "NO CLIENTE",
+                    "NUMERO DO CLIENTE",
+                    "CLIENTE",
+                    "UC",
+                    "CONTA CONTRATO",
+                ],
+                "NOME DO CLIENTE": [
+                    "NOME DO CLIENTE",
+                    "NOME CLIENTE",
+                    "CLIENTE NOME",
+                    "NOME",
+                    "RAZAO SOCIAL",
+                ],
                 "ENDEREÇO": ["ENDERECO", "LOGRADOURO", "RUA"],
-                "MEDIDOR": ["MEDIDOR", "NO MEDIDOR", "N MEDIDOR", "EQUIPAMENTO", "NUMERO MEDIDOR"],
+                "MEDIDOR": [
+                    "MEDIDOR",
+                    "NO MEDIDOR",
+                    "N MEDIDOR",
+                    "EQUIPAMENTO",
+                    "NUMERO MEDIDOR",
+                ],
                 "DATA": ["DATA", "DATA DO RELATORIO", "DATA RELAT", "DATA ENVIO"],
                 "DATA SOLIC.": ["DATA SOLIC", "DATA SOLICITACAO", "DATA ENTRADA"],
-                "COORDENADAS": ["COORDENADAS", "COORDENADA", "LINK", "MAPS", "LOCALIZACAO", "GPS"],
+                "COORDENADAS": [
+                    "COORDENADAS",
+                    "COORDENADA",
+                    "LINK",
+                    "MAPS",
+                    "LOCALIZACAO",
+                    "GPS",
+                ],
             }
 
             colunas_resolvidas: Dict[str, str] = {}
@@ -756,7 +800,9 @@ class AppFiscal:
                         colunas_resolvidas["COORDENADAS"] = col
                         break
 
-            col_data_ref = colunas_resolvidas.get("DATA") or colunas_resolvidas.get("DATA SOLIC.")
+            col_data_ref = colunas_resolvidas.get("DATA") or colunas_resolvidas.get(
+                "DATA SOLIC."
+            )
             if col_data_ref:
                 df_temp["_DATA_CLEAN"] = df_temp[col_data_ref].apply(format_date_str)
             else:
@@ -764,10 +810,7 @@ class AppFiscal:
 
             col_fiscal_orig = colunas_resolvidas["FISCAL"]
             df_temp["_FISCAL_CLEAN"] = (
-                df_temp[col_fiscal_orig]
-                .astype(str)
-                .str.strip()
-                .str.upper()
+                df_temp[col_fiscal_orig].astype(str).str.strip().str.upper()
             )
 
             valores_invalidos = {"", "NAN", "NONE", "NULL", "<NA>", "0", ".", "-"}
@@ -809,14 +852,28 @@ class AppFiscal:
             )
 
         except Exception as e:
-            messagebox.showerror("Erro de Leitura", f"Erro ao processar planilha:\n{str(e)}")
+            messagebox.showerror(
+                "Erro de Leitura", f"Erro ao processar planilha:\n{str(e)}"
+            )
             self.status_bar.config(text="Erro ao importar arquivo.")
         finally:
             self.root.config(cursor="")
 
     def on_fiscal_select(self, event: Any = None) -> None:
+        if self.df is None:
+            return
+
+        # Se foi um clique manual do usuário na lista, limpa a busca global
+        if event is not None:
+            if hasattr(self, "ent_busca_cliente"):
+                self.ent_busca_cliente.delete(0, tk.END)
+            if hasattr(self, "ent_busca_endereco"):
+                self.ent_busca_endereco.delete(0, tk.END)
+            if hasattr(self, "ent_busca_medidor"):
+                self.ent_busca_medidor.delete(0, tk.END)
+
         selecao = self.lst_fiscais.curselection()
-        if not selecao or self.df is None:
+        if not selecao:
             return
 
         fiscal_nome = self.fiscais_filtrados[selecao[0]]
@@ -825,7 +882,10 @@ class AppFiscal:
 
         total_ordens = len(df_fiscal)
         self.total_ordens_fiscal_atual = total_ordens
-        self.data_selecionada = None
+
+        # Reseta a data ao trocar de fiscal manualmente
+        if event is not None:
+            self.data_selecionada = None
 
         datas_serie = df_fiscal["_DATA_CLEAN"].dropna()
         datas_validas = [str(d) for d in datas_serie if str(d).strip() != ""]
@@ -848,7 +908,7 @@ class AppFiscal:
             return
 
         ordem = self.var_ordem_datas.get()
-        reverse = (ordem == "decrescente")
+        reverse = ordem == "decrescente"
 
         datas_ordenadas = sorted(
             self.datas_fiscal_map.items(),
@@ -879,6 +939,15 @@ class AppFiscal:
         if not selecao_data:
             return
 
+        # Se foi um clique manual na lista de datas, limpa a busca global
+        if event is not None:
+            if hasattr(self, "ent_busca_cliente"):
+                self.ent_busca_cliente.delete(0, tk.END)
+            if hasattr(self, "ent_busca_endereco"):
+                self.ent_busca_endereco.delete(0, tk.END)
+            if hasattr(self, "ent_busca_medidor"):
+                self.ent_busca_medidor.delete(0, tk.END)
+
         idx_data = selecao_data[0]
         if idx_data == 0 or not self.datas_fiscal:
             self.data_selecionada = None
@@ -888,47 +957,142 @@ class AppFiscal:
         self.aplicar_filtros()
 
     def aplicar_filtros(self, event: Any = None) -> None:
-        """Filtra o conjunto de dados por Fiscal + Data + Cliente + Endereço."""
+        """Busca global e universal em toda a planilha."""
         if self.df is None:
             return
 
-        selecao_fiscal = self.lst_fiscais.curselection()
-        if not selecao_fiscal:
-            return
-
-        fiscal_nome = self.fiscais_filtrados[selecao_fiscal[0]]
-        df_f = self.df[self.df["_FISCAL_CLEAN"] == fiscal_nome.strip().upper()].copy()
-
-        # Filtro de Data
-        if self.data_selecionada:
-            df_f = df_f[df_f["_DATA_CLEAN"] == self.data_selecionada]
-
-        # Filtro por Nome do Cliente
-        busca_cli = self.ent_busca_cliente.get().strip().lower()
-        if busca_cli:
-            col_nome = self.col_map.get("NOME DO CLIENTE")
-            if col_nome:
-                df_f = df_f[df_f[col_nome].astype(str).str.lower().str.contains(busca_cli, na=False)]
-
-        # Filtro por Endereço
-        busca_end = self.ent_busca_endereco.get().strip().lower()
-        if busca_end:
-            col_end = self.col_map.get("ENDEREÇO")
-            if col_end:
-                df_f = df_f[df_f[col_end].astype(str).str.lower().str.contains(busca_end, na=False)]
-
-        self.df_filtrado = df_f
-        self.index_atual = 0
-
-        qtd = len(self.df_filtrado) # pyright: ignore[reportArgumentType]
-        if self.data_selecionada:
-            self.lbl_qtd_ordens.config(text=f"Ordens em {self.data_selecionada}: {qtd}")
-        else:
-            self.lbl_qtd_ordens.config(text=f"Ordens encontradas: {qtd}")
-
-        self.status_bar.config(
-            text=f"Fiscal: {fiscal_nome} | Total exibido: {qtd} ordens"
+        busca_cli = (
+            self.ent_busca_cliente.get().strip().lower()
+            if hasattr(self, "ent_busca_cliente")
+            else ""
         )
+        busca_end = (
+            self.ent_busca_endereco.get().strip().lower()
+            if hasattr(self, "ent_busca_endereco")
+            else ""
+        )
+        busca_med = (
+            self.ent_busca_medidor.get().strip().lower()
+            if hasattr(self, "ent_busca_medidor")
+            else ""
+        )
+
+        tem_busca_global = bool(busca_cli or busca_end or busca_med)
+
+        if tem_busca_global:
+            # Inicia com uma cópia de toda a planilha
+            df_f = self.df.copy()
+
+            # 1. Filtro por Cliente (se preenchido)
+            if busca_cli:
+                col_nome = self.col_map.get("NOME DO CLIENTE")
+                if col_nome and col_nome in df_f.columns:
+                    df_f = df_f[
+                        df_f[col_nome]
+                        .astype(str)
+                        .str.lower()
+                        .str.contains(busca_cli, na=False)
+                    ]
+
+            # 2. Filtro por Endereço (se preenchido)
+            if busca_end:
+                col_end = self.col_map.get("ENDEREÇO")
+                if col_end and col_end in df_f.columns:
+                    df_f = df_f[
+                        df_f[col_end]
+                        .astype(str)
+                        .str.lower()
+                        .str.contains(busca_end, na=False)
+                    ]
+
+            # 3. Busca Universal por Medidor/Número (Varre TODAS as colunas da planilha inteira)
+            if busca_med:
+                # Usa regex com limites (\b) para garantir que busque o número exato, 
+                # evitando que pegue pedaços de coordenadas, URLs ou outros números.
+                padrao_regex = rf"\b{re.escape(busca_med)}\b"
+                
+                condicao_unificada = False
+                for col in df_f.columns:
+                    col_str = df_f[col].apply(format_cell_value).str.lower()
+                    condicao_unificada |= col_str.str.contains(padrao_regex, regex=True, na=False)
+                
+                df_f = df_f[condicao_unificada]
+
+            self.df_filtrado = df_f
+            self.index_atual = 0
+
+            # Sincroniza automaticamente o Fiscal e a Data do primeiro resultado encontrado
+            if not df_f.empty:
+                primeiro_registro = df_f.iloc[0]
+                fiscal_encontrado = (
+                    str(primeiro_registro.get("_FISCAL_CLEAN", "")).strip().upper()
+                )
+                data_encontrada = str(primeiro_registro.get("_DATA_CLEAN", ""))
+
+                # Seleciona o fiscal na lista da esquerda
+                for idx, f_nome in enumerate(self.fiscais_filtrados):
+                    if f_nome.strip().upper() == fiscal_encontrado:
+                        self.lst_fiscais.selection_clear(0, tk.END)
+                        self.lst_fiscais.selection_set(idx)
+                        self.lst_fiscais.see(idx)
+                        break
+
+                # Atualiza as datas do fiscal encontrado
+                df_fiscal_completo = self.df[
+                    self.df["_FISCAL_CLEAN"] == fiscal_encontrado
+                ]
+                self.total_ordens_fiscal_atual = len(df_fiscal_completo)
+                datas_serie = df_fiscal_completo["_DATA_CLEAN"].dropna()
+                datas_validas = [str(d) for d in datas_serie if str(d).strip() != ""]
+
+                if datas_validas:
+                    self.datas_fiscal_map = {
+                        str(k): int(v)
+                        for k, v in pd.Series(datas_validas).value_counts().items()
+                    }
+                else:
+                    self.datas_fiscal_map = {}
+
+                self.data_selecionada = data_encontrada
+                self.aplicar_ordem_datas()
+
+        else:
+            # Modo padrão (navegação manual por cliques na lista)
+            selecao_fiscal = self.lst_fiscais.curselection()
+            if not selecao_fiscal:
+                self.df_filtrado = pd.DataFrame()
+                self.index_atual = 0
+                self.exibir_mensagem_individual()
+                return
+
+            fiscal_nome = self.fiscais_filtrados[selecao_fiscal[0]]
+            df_f = self.df[
+                self.df["_FISCAL_CLEAN"] == fiscal_nome.strip().upper()
+            ].copy()
+
+            if self.data_selecionada:
+                df_f = df_f[df_f["_DATA_CLEAN"] == self.data_selecionada]
+
+            self.df_filtrado = df_f
+            self.index_atual = 0
+
+        # Atualiza a interface e contadores
+        qtd = len(self.df_filtrado) if self.df_filtrado is not None else 0
+        self.lbl_qtd_ordens.config(text=f"Ordens encontradas: {qtd}")
+
+        if tem_busca_global:
+            self.status_bar.config(
+                text=f"Busca Universal Ativada | Total exibido: {qtd} ordens"
+            )
+        else:
+            fiscal_selecionado = (
+                self.fiscais_filtrados[self.lst_fiscais.curselection()[0]]
+                if self.lst_fiscais.curselection()
+                else ""
+            )
+            self.status_bar.config(
+                text=f"Fiscal: {fiscal_selecionado} | Total exibido: {qtd} ordens"
+            )
 
         self.exibir_mensagem_individual()
 
@@ -936,7 +1100,9 @@ class AppFiscal:
         """Gera e exibe a mensagem para o registro atual grifando os termos buscados."""
         if self.df_filtrado is None or self.df_filtrado.empty:
             self.txt_preview.delete("1.0", tk.END)
-            self.txt_preview.insert(tk.END, "Nenhum registro encontrado para os filtros selecionados.")
+            self.txt_preview.insert(
+                tk.END, "Nenhum registro encontrado para os filtros selecionados."
+            )
             self.lbl_nav_pos.config(text="0 / 0")
             self.btn_ant.config(state="disabled")
             self.btn_prox.config(state="disabled")
@@ -951,12 +1117,14 @@ class AppFiscal:
         col_nome = self.col_map.get("NOME DO CLIENTE")
         col_endereco = self.col_map.get("ENDEREÇO")
         col_coord = self.col_map.get("COORDENADAS")
+        col_medidor = self.col_map.get("MEDIDOR")
 
         selecao_f = self.lst_fiscais.curselection()
         fiscal_nome = self.fiscais_filtrados[selecao_f[0]] if selecao_f else "Fiscal"
 
         uc = format_cell_value(row.get(col_cliente)) if col_cliente else "-"
         nc = format_cell_value(row.get(col_ordem)) if col_ordem else "-"
+        medidor = format_cell_value(row.get(col_medidor)) if col_medidor else "-"
         nome = format_cell_value(row.get(col_nome)) if col_nome else "-"
         endereco = format_cell_value(row.get(col_endereco)) if col_endereco else "-"
 
@@ -970,17 +1138,20 @@ class AppFiscal:
         if self.data_selecionada:
             linhas.append(f"Data: {self.data_selecionada}")
 
-        linhas.extend([
-            "Segue a lista de informações para verificar se está ligada/ativa, habitada, se é uma residência ou comércio e informar as leituras, nc e nf do medidor.",
-            "",
-            "listas abaixo:",
-            "",
-            num_formatado,
-            f"uc: {uc}",
-            f"nc: {nc}",
-            f"nome cliente: {nome}",
-            f"endereço: {endereco}"
-        ])
+        linhas.extend(
+            [
+                "Segue a lista de informações para verificar se está ligada/ativa, habitada, se é uma residência ou comércio e informar as leituras, nc e nf do medidor.",
+                "",
+                "listas abaixo:",
+                "",
+                num_formatado,
+                f"uc: {uc}",
+                f"nc: {nc}",
+                f"medidor: {medidor}",
+                f"nome cliente: {nome}",
+                f"endereço: {endereco}",
+            ]
+        )
 
         link_mapa = extract_maps_link(row.get(col_coord)) if col_coord else ""
         if not link_mapa:
@@ -997,21 +1168,28 @@ class AppFiscal:
         self.txt_preview.delete("1.0", tk.END)
         self.txt_preview.insert(tk.END, texto_mensagem)
 
-        # Grifa/Realça o texto buscado em Cliente ou Endereço
+        # Grifa/Realça o texto buscado
         self._grifar_termos_buscados()
 
         self.lbl_nav_pos.config(text=f"{self.index_atual + 1} / {total}")
         self.btn_ant.config(state="normal" if self.index_atual > 0 else "disabled")
-        self.btn_prox.config(state="normal" if self.index_atual < total - 1 else "disabled")
+        self.btn_prox.config(
+            state="normal" if self.index_atual < total - 1 else "disabled"
+        )
         self._set_action_buttons_state("normal")
 
     def _grifar_termos_buscados(self) -> None:
-        """Aplica o fundo amarelo nas palavras correspondentes às buscas."""
+        """Aplica o fundo amarelo nas palavras correspondentes às buscas de Cliente, Endereço e Medidor/NC."""
         self.txt_preview.tag_remove("highlight", "1.0", tk.END)
 
         termos = [
             self.ent_busca_cliente.get().strip(),
-            self.ent_busca_endereco.get().strip()
+            self.ent_busca_endereco.get().strip(),
+            (
+                self.ent_busca_medidor.get().strip()
+                if hasattr(self, "ent_busca_medidor")
+                else ""
+            ),
         ]
 
         for termo in termos:
@@ -1020,7 +1198,9 @@ class AppFiscal:
 
             pos_inicio = "1.0"
             while True:
-                pos_match = self.txt_preview.search(termo, pos_inicio, stopindex=tk.END, nocase=True)
+                pos_match = self.txt_preview.search(
+                    termo, pos_inicio, stopindex=tk.END, nocase=True
+                )
                 if not pos_match:
                     break
                 pos_fim = f"{pos_match}+{len(termo)}c"
@@ -1028,7 +1208,10 @@ class AppFiscal:
                 pos_inicio = pos_fim
 
     def proximo_reg(self) -> None:
-        if self.df_filtrado is not None and self.index_atual < len(self.df_filtrado) - 1:
+        if (
+            self.df_filtrado is not None
+            and self.index_atual < len(self.df_filtrado) - 1
+        ):
             self.index_atual += 1
             self.exibir_mensagem_individual()
 
@@ -1064,7 +1247,9 @@ class AppFiscal:
 
         if self._copiar_para_clipboard(texto):
             self.status_bar.config(text="✔ Mensagem copiada com sucesso!")
-            messagebox.showinfo("Copiado", "Mensagem copiada para a Área de Transferência!")
+            messagebox.showinfo(
+                "Copiado", "Mensagem copiada para a Área de Transferência!"
+            )
 
     def salvar_txt_direto(self) -> None:
         texto = self.txt_preview.get("1.0", tk.END).strip()
@@ -1088,10 +1273,14 @@ class AppFiscal:
             try:
                 with open(caminho_salvar, "w", encoding="utf-8") as f:
                     f.write(texto)
-                self.status_bar.config(text=f"Arquivo salvo: {os.path.basename(caminho_salvar)}")
+                self.status_bar.config(
+                    text=f"Arquivo salvo: {os.path.basename(caminho_salvar)}"
+                )
                 messagebox.showinfo("Sucesso", f"Arquivo salvo em:\n{caminho_salvar}")
             except Exception as e:
-                messagebox.showerror("Erro ao Salvar", f"Não foi possível salvar:\n{str(e)}")
+                messagebox.showerror(
+                    "Erro ao Salvar", f"Não foi possível salvar:\n{str(e)}"
+                )
 
     def exportar_todos_em_lote(self) -> None:
         if self.df_filtrado is None or self.df_filtrado.empty:
@@ -1102,7 +1291,7 @@ class AppFiscal:
             title="Salvar todas as ordens filtradas",
             defaultextension=".txt",
             filetypes=[("Arquivo de Texto", "*.txt")],
-            initialfile="ordens_filtradas_exportacao.txt"
+            initialfile="ordens_filtradas_exportacao.txt",
         )
         if not caminho:
             return
@@ -1111,16 +1300,23 @@ class AppFiscal:
         try:
             texto_completo = ""
             total = len(self.df_filtrado)
-            
+
             for i in range(total):
                 self.index_atual = i
                 self.exibir_mensagem_individual()
-                texto_completo += self.txt_preview.get("1.0", tk.END).strip() + "\n\n" + ("="*40) + "\n\n"
+                texto_completo += (
+                    self.txt_preview.get("1.0", tk.END).strip()
+                    + "\n\n"
+                    + ("=" * 40)
+                    + "\n\n"
+                )
 
             with open(caminho, "w", encoding="utf-8") as f:
                 f.write(texto_completo)
 
-            messagebox.showinfo("Sucesso", f"Todas as {total} ordens filtradas foram exportadas!")
+            messagebox.showinfo(
+                "Sucesso", f"Todas as {total} ordens filtradas foram exportadas!"
+            )
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao exportar lote:\n{str(e)}")
         finally:
