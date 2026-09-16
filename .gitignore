@@ -1,0 +1,13 @@
+# Arquivos compilados do Python e PyInstaller
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+
+# Planilhas Excel com dados sensíveis
+*.xlsx
+*.xls
+
+# Arquivos temporários de saída
+*.txt
