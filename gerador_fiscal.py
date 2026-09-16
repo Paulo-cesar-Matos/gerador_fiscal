@@ -1097,7 +1097,7 @@ class AppFiscal:
         self.exibir_mensagem_individual()
 
     def exibir_mensagem_individual(self) -> None:
-        """Gera e exibe a mensagem para o registro atual grifando os termos buscados."""
+        """Gera e exibe a mensagem na prévia da tela seguindo o novo padrão visual."""
         if self.df_filtrado is None or self.df_filtrado.empty:
             self.txt_preview.delete("1.0", tk.END)
             self.txt_preview.insert(
@@ -1128,30 +1128,21 @@ class AppFiscal:
         nome = format_cell_value(row.get(col_nome)) if col_nome else "-"
         endereco = format_cell_value(row.get(col_endereco)) if col_endereco else "-"
 
-        num_formatado = f"{self.index_atual + 1:06d}"
         saudacao = get_time_greeting()
+        data_str = self.data_selecionada if self.data_selecionada else "-"
 
+        # Montagem do modelo visualizado na prévia
         linhas = [
             f"{saudacao}, {fiscal_nome}",
+            "Segue a lista de informações para verificar se está ligada/ativa, habitada, se é uma residência ou comércio e informar as leituras, nc e nf do medidor.",
+            "",
+            f"Data: {data_str}",
+            f"N° do cliente: {uc}",
+            f"N° de ordem: {nc}",
+            f"Medidor: {medidor}",
+            f"Nome do cliente: {nome}",
+            f"Endereço: {endereco}",
         ]
-
-        if self.data_selecionada:
-            linhas.append(f"Data: {self.data_selecionada}")
-
-        linhas.extend(
-            [
-                "Segue a lista de informações para verificar se está ligada/ativa, habitada, se é uma residência ou comércio e informar as leituras, nc e nf do medidor.",
-                "",
-                "listas abaixo:",
-                "",
-                num_formatado,
-                f"uc: {uc}",
-                f"nc: {nc}",
-                f"medidor: {medidor}",
-                f"nome cliente: {nome}",
-                f"endereço: {endereco}",
-            ]
-        )
 
         link_mapa = extract_maps_link(row.get(col_coord)) if col_coord else ""
         if not link_mapa:
@@ -1161,14 +1152,14 @@ class AppFiscal:
                     break
 
         if link_mapa:
-            linhas.append(f"coordenadas: {link_mapa}")
+            linhas.append(f"Coordenadas: {link_mapa}")
 
         texto_mensagem = "\n".join(linhas)
 
         self.txt_preview.delete("1.0", tk.END)
         self.txt_preview.insert(tk.END, texto_mensagem)
 
-        # Grifa/Realça o texto buscado
+        # Grifa/Realça os termos buscados na interface
         self._grifar_termos_buscados()
 
         self.lbl_nav_pos.config(text=f"{self.index_atual + 1} / {total}")
@@ -1177,6 +1168,66 @@ class AppFiscal:
             state="normal" if self.index_atual < total - 1 else "disabled"
         )
         self._set_action_buttons_state("normal")
+
+    def copiar_mensagem(self) -> None:
+        """Copia a mensagem formatada para a área de transferência seguindo o novo modelo."""
+        if self.df_filtrado is None or self.df_filtrado.empty:
+            return
+
+        row = self.df_filtrado.iloc[self.index_atual]
+
+        col_ordem = self.col_map.get("Nº ORDEM")
+        col_cliente = self.col_map.get("Nº CLIENTE")
+        col_nome = self.col_map.get("NOME DO CLIENTE")
+        col_endereco = self.col_map.get("ENDEREÇO")
+        col_coord = self.col_map.get("COORDENADAS")
+        col_medidor = self.col_map.get("MEDIDOR")
+
+        selecao_f = self.lst_fiscais.curselection()
+        fiscal_nome = self.fiscais_filtrados[selecao_f[0]] if selecao_f else "Fiscal"
+
+        uc = format_cell_value(row.get(col_cliente)) if col_cliente else "-"
+        nc = format_cell_value(row.get(col_ordem)) if col_ordem else "-"
+        medidor = format_cell_value(row.get(col_medidor)) if col_medidor else "-"
+        nome = format_cell_value(row.get(col_nome)) if col_nome else "-"
+        endereco = format_cell_value(row.get(col_endereco)) if col_endereco else "-"
+
+        saudacao = get_time_greeting()
+        data_str = self.data_selecionada if self.data_selecionada else "-"
+
+        # Montagem no novo formato padronizado
+        linhas = [
+            f"{saudacao}, {fiscal_nome}",
+            "Segue a lista de informações para verificar se está ligada/ativa, habitada, se é uma residência ou comércio e informar as leituras, nc e nf do medidor.",
+            "",
+            f"Data: {data_str}",
+            f"N° do cliente: {uc}",
+            f"N° de ordem: {nc}",
+            f"Medidor: {medidor}",
+            f"Nome do cliente: {nome}",
+            f"Endereço: {endereco}",
+        ]
+
+        link_mapa = extract_maps_link(row.get(col_coord)) if col_coord else ""
+        if not link_mapa:
+            for val in row.values:
+                link_mapa = extract_maps_link(val)
+                if link_mapa:
+                    break
+
+        if link_mapa:
+            linhas.append(f"Coordenadas: {link_mapa}")
+
+        texto_final = "\n".join(linhas)
+
+        # Copia para a área de transferência
+        if pyperclip:
+            pyperclip.copy(texto_final)
+        else:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(texto_final)
+
+        messagebox.showinfo("Sucesso", "Mensagem copiada para a área de transferência!")
 
     def _grifar_termos_buscados(self) -> None:
         """Aplica o fundo amarelo nas palavras correspondentes às buscas de Cliente, Endereço e Medidor/NC."""
