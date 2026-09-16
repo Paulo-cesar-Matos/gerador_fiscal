@@ -11,3 +11,5 @@ dist/
 
 # Arquivos temporários de saída
 *.txt
+
+*.obsidian
